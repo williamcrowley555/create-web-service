@@ -4,8 +4,7 @@ import com.william.createwebservice.exception.UserServiceException;
 import com.william.createwebservice.service.UserService;
 import com.william.createwebservice.shared.dto.UserDTO;
 import com.william.createwebservice.ui.model.request.UserDetailsRequestModel;
-import com.william.createwebservice.ui.model.response.ErrorMessages;
-import com.william.createwebservice.ui.model.response.UserRest;
+import com.william.createwebservice.ui.model.response.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,4 +71,14 @@ public class UserController {
         return ResponseEntity.ok(returnValue);
     }
 
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity<OperationStatusModel> deleteUser(@PathVariable String id) {
+        OperationStatusModel returnValue = new OperationStatusModel();
+        returnValue.setOperationName(RequestOperationName.DELETE.name());
+
+        userService.deleteUser(id);
+        returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name());
+
+        return ResponseEntity.ok(returnValue);
+    }
 }
