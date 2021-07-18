@@ -1,10 +1,12 @@
 package com.william.createwebservice.service.impl;
 
+import com.william.createwebservice.exception.UserServiceException;
 import com.william.createwebservice.io.entity.UserEntity;
 import com.william.createwebservice.io.repository.UserRepository;
 import com.william.createwebservice.service.UserService;
 import com.william.createwebservice.shared.Utils;
 import com.william.createwebservice.shared.dto.UserDTO;
+import com.william.createwebservice.ui.model.response.ErrorMessages;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +56,34 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDTO getUser(String email) {
+        UserEntity userEntity = userRepository.findByEmail(email);
+
+        if (userEntity == null) {
+            throw new UsernameNotFoundException(email);
+        }
+
+        UserDTO returnValue = new UserDTO();
+        BeanUtils.copyProperties(userEntity, returnValue);
+
+        return returnValue;
+    }
+
+    @Override
+    public UserDTO getUserByUserId(String userId) {
+        UserDTO returnValue = new UserDTO();
+        UserEntity userEntity = userRepository.findByUserId(userId);
+
+        if (userEntity == null) {
+            throw new UsernameNotFoundException("User with ID: " + userId + " not found");
+        }
+
+        BeanUtils.copyProperties(userEntity, returnValue);
+
+        return returnValue;
+    }
+
+    @Override
     public UserDTO createUser(UserDTO user) {
         if (userRepository.findByEmail(user.getEmail()) != null) {
             throw new RuntimeException("Record already exists");
@@ -71,6 +101,34 @@ public class UserServiceImpl implements UserService {
         UserDTO returnValue = modelMapper.map(storedUserDetails, UserDTO.class);
 
         return returnValue;
+    }
+    @Override
+    public UserDTO updateUser(String userId, UserDTO user) {
+        UserDTO returnValue = new UserDTO();
+        UserEntity userEntity = userRepository.findByUserId(userId);
+
+        if (userEntity == null) {
+            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+        }
+
+        userEntity.setFirstName(user.getFirstName());
+        userEntity.setLastName(user.getLastName());
+
+        UserEntity updatedUserDetails = userRepository.save(userEntity);
+        BeanUtils.copyProperties(updatedUserDetails, returnValue);
+
+        return returnValue;
+    }
+
+    @Override
+    public void deleteUser(String userId) {
+        UserEntity userEntity = userRepository.findByUserId(userId);
+
+        if (userEntity == null) {
+            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+        }
+
+        userRepository.delete(userEntity);
     }
 
     @Override

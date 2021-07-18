@@ -1,12 +1,15 @@
 package com.william.createwebservice.ui.controller;
 
+import com.william.createwebservice.exception.UserServiceException;
 import com.william.createwebservice.service.UserService;
 import com.william.createwebservice.shared.dto.UserDTO;
 import com.william.createwebservice.ui.model.request.UserDetailsRequestModel;
+import com.william.createwebservice.ui.model.response.ErrorMessages;
 import com.william.createwebservice.ui.model.response.UserRest;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -36,6 +39,16 @@ public class UserController {
         return returnValue;
     }
 
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<UserRest> getUser(@PathVariable String id) {
+        UserRest returnValue = new UserRest();
+
+        UserDTO userDTO = userService.getUserByUserId(id);
+        BeanUtils.copyProperties(userDTO, returnValue);
+
+        return ResponseEntity.ok(returnValue);
+    }
+
     @PostMapping
     public UserRest createUser(@RequestBody UserDetailsRequestModel userDetails) throws Exception {
         ModelMapper modelMapper = new ModelMapper();
@@ -45,6 +58,18 @@ public class UserController {
         UserRest returnValue = modelMapper.map(createdUser, UserRest.class);
 
         return returnValue;
+    }
+
+    @PutMapping(path = "/{id}")
+    public ResponseEntity<UserRest> updateUser(@RequestBody UserDetailsRequestModel userDetails, @PathVariable String id) {
+        ModelMapper modelMapper = new ModelMapper();
+
+        UserDTO userDTO = modelMapper.map(userDetails, UserDTO.class);
+
+        UserDTO updateUser = userService.updateUser(id, userDTO);
+        UserRest returnValue = modelMapper.map(updateUser, UserRest.class);
+
+        return ResponseEntity.ok(returnValue);
     }
 
 }
