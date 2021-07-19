@@ -3,6 +3,7 @@ package com.william.createwebservice.service.impl;
 import com.william.createwebservice.exception.UserServiceException;
 import com.william.createwebservice.io.entity.UserEntity;
 import com.william.createwebservice.io.repository.UserRepository;
+import com.william.createwebservice.security.UserDetailsImpl;
 import com.william.createwebservice.service.UserService;
 import com.william.createwebservice.shared.Utils;
 import com.william.createwebservice.shared.dto.UserDTO;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -47,8 +49,8 @@ public class UserServiceImpl implements UserService {
         List<UserEntity> users = userPage.getContent();
 
         for (UserEntity userEntity : users) {
-            UserDTO userDTO = new UserDTO();
-            BeanUtils.copyProperties(userEntity, userDTO);
+            ModelMapper modelMapper = new ModelMapper();
+            UserDTO userDTO = modelMapper.map(userEntity, UserDTO.class);
             returnValue.add(userDTO);
         }
 
@@ -57,35 +59,37 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getUser(String email) {
-        UserEntity userEntity = userRepository.findByEmail(email);
+        Optional<UserEntity> optional = userRepository.findByEmail(email);
 
-        if (userEntity == null) {
+        if (optional.isEmpty()) {
             throw new UsernameNotFoundException(email);
         }
 
-        UserDTO returnValue = new UserDTO();
-        BeanUtils.copyProperties(userEntity, returnValue);
+        ModelMapper modelMapper = new ModelMapper();
+        UserEntity userEntity = optional.get();
+        UserDTO returnValue = modelMapper.map(userEntity, UserDTO.class);
 
         return returnValue;
     }
 
     @Override
     public UserDTO getUserByUserId(String userId) {
-        UserDTO returnValue = new UserDTO();
-        UserEntity userEntity = userRepository.findByUserId(userId);
+        Optional<UserEntity> optional = userRepository.findByUserId(userId);
 
-        if (userEntity == null) {
+        if (optional.isEmpty()) {
             throw new UsernameNotFoundException("User with ID: " + userId + " not found");
         }
 
-        BeanUtils.copyProperties(userEntity, returnValue);
+        ModelMapper modelMapper = new ModelMapper();
+        UserEntity userEntity = optional.get();
+        UserDTO returnValue = modelMapper.map(userEntity, UserDTO.class);
 
         return returnValue;
     }
 
     @Override
     public UserDTO createUser(UserDTO user) {
-        if (userRepository.findByEmail(user.getEmail()) != null) {
+        if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("Record already exists");
         }
 
@@ -104,41 +108,44 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public UserDTO updateUser(String userId, UserDTO user) {
-        UserDTO returnValue = new UserDTO();
-        UserEntity userEntity = userRepository.findByUserId(userId);
+        Optional<UserEntity> optional = userRepository.findByUserId(userId);
 
-        if (userEntity == null) {
+        if (optional.isEmpty()) {
             throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
         }
 
+        UserEntity userEntity = optional.get();
         userEntity.setFirstName(user.getFirstName());
         userEntity.setLastName(user.getLastName());
 
+        ModelMapper modelMapper = new ModelMapper();
         UserEntity updatedUserDetails = userRepository.save(userEntity);
-        BeanUtils.copyProperties(updatedUserDetails, returnValue);
+        UserDTO returnValue = modelMapper.map(updatedUserDetails, UserDTO.class);
 
         return returnValue;
     }
 
     @Override
     public void deleteUser(String userId) {
-        UserEntity userEntity = userRepository.findByUserId(userId);
+        Optional<UserEntity> optional = userRepository.findByUserId(userId);
 
-        if (userEntity == null) {
+        if (optional.isEmpty()) {
             throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
         }
 
-        userRepository.delete(userEntity);
+        userRepository.delete(optional.get());
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UserEntity userEntity = userRepository.findByEmail(email);
+        Optional<UserEntity> optional = userRepository.findByEmail(email);
 
-        if (userEntity == null) {
+        if (optional.isEmpty()) {
             throw new UsernameNotFoundException(email);
         }
 
-        return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), new ArrayList<>());
+        UserEntity userEntity = optional.get();
+
+        return new UserDetailsImpl(userEntity);
     }
 }

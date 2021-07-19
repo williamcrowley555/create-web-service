@@ -16,7 +16,7 @@ import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000/")
 @RestController
-@RequestMapping(path = "users")
+@RequestMapping(path = "api/users")
 public class UserController {
 
     @Autowired
@@ -30,8 +30,8 @@ public class UserController {
         List<UserDTO> users = userService.getUsers(page, limit);
 
         for (UserDTO userDTO : users) {
-            UserRest userModel = new UserRest();
-            BeanUtils.copyProperties(userDTO, userModel);
+            ModelMapper modelMapper = new ModelMapper();
+            UserRest userModel = modelMapper.map(userDTO, UserRest.class);
             returnValue.add(userModel);
         }
 
@@ -40,10 +40,9 @@ public class UserController {
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<UserRest> getUser(@PathVariable String id) {
-        UserRest returnValue = new UserRest();
-
+        ModelMapper modelMapper = new ModelMapper();
         UserDTO userDTO = userService.getUserByUserId(id);
-        BeanUtils.copyProperties(userDTO, returnValue);
+        UserRest returnValue = modelMapper.map(userDTO, UserRest.class);
 
         return ResponseEntity.ok(returnValue);
     }
