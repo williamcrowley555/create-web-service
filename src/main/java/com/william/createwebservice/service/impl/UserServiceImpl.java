@@ -9,15 +9,13 @@ import com.william.createwebservice.shared.Utils;
 import com.william.createwebservice.shared.dto.UserDTO;
 import com.william.createwebservice.ui.model.response.ErrorMessages;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -34,7 +32,7 @@ public class UserServiceImpl implements UserService {
     private Utils utils;
 
     @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public List<UserDTO> getUsers(int page, int limit) {
@@ -90,7 +88,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO createUser(UserDTO user) {
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Record already exists");
+            throw new RuntimeException("Email is already in use");
         }
 
         ModelMapper modelMapper = new ModelMapper();
@@ -98,7 +96,7 @@ public class UserServiceImpl implements UserService {
 
         String publicUserId = utils.generateUserId(30);
         userEntity.setUserId(publicUserId);
-        userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        userEntity.setEncryptedPassword(passwordEncoder.encode(user.getPassword()));
 
         UserEntity storedUserDetails = userRepository.save(userEntity);
 
@@ -134,6 +132,11 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.delete(optional.get());
+    }
+
+    @Override
+    public Boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 
     @Override

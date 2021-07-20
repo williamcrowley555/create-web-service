@@ -1,6 +1,8 @@
 package com.william.createwebservice.shared.dto;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 public class UserDTO implements Serializable {
 
@@ -13,8 +15,14 @@ public class UserDTO implements Serializable {
     private String email;
     private String password;
     private String encryptedPassword;
+    private Set<RoleDTO> roles = new HashSet<>();
 
     public UserDTO() {
+    }
+
+    public UserDTO(String email, String password) {
+        this.email = email;
+        this.password = password;
     }
 
     public long getId() {
@@ -71,5 +79,13 @@ public class UserDTO implements Serializable {
 
     public void setEncryptedPassword(String encryptedPassword) {
         this.encryptedPassword = encryptedPassword;
+    }
+
+    public Set<RoleDTO> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<RoleDTO> roles) {
+        this.roles = roles;
     }
 }

@@ -1,13 +1,32 @@
 package com.william.createwebservice.ui.model.request;
 
-public class UserDetailsRequestModel {
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+import java.util.HashSet;
+import java.util.Set;
 
+public class UserDetailsRequest {
+
+    @NotBlank
+    @Size(max = 50)
     private String firstName;
+
+    @NotBlank
+    @Size(max = 50)
     private String lastName;
+
+    @NotBlank
+    @Size(max = 120)
+    @Email
     private String email;
+
+    @NotBlank
     private String password;
 
-    public UserDetailsRequestModel() {
+    private Set<String> roles = new HashSet<>();
+
+    public UserDetailsRequest() {
     }
 
     public String getFirstName() {
@@ -40,5 +59,13 @@ public class UserDetailsRequestModel {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Set<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
     }
 }

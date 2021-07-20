@@ -1,13 +1,13 @@
 package com.william.createwebservice.ui.model.response;
 
-public class UserRest {
+public class UserResponse {
 
     private String userId;
     private String firstName;
     private String lastName;
     private String email;
 
-    public UserRest() {
+    public UserResponse() {
     }
 
     public String getUserId() {

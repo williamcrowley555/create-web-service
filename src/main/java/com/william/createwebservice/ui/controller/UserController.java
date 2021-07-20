@@ -1,20 +1,19 @@
 package com.william.createwebservice.ui.controller;
 
-import com.william.createwebservice.exception.UserServiceException;
 import com.william.createwebservice.service.UserService;
 import com.william.createwebservice.shared.dto.UserDTO;
-import com.william.createwebservice.ui.model.request.UserDetailsRequestModel;
+import com.william.createwebservice.ui.model.request.UserDetailsRequest;
 import com.william.createwebservice.ui.model.response.*;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:3000/")
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping(path = "api/users")
 public class UserController {
@@ -23,15 +22,16 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public List<UserRest> getUsers(@RequestParam(value = "page", defaultValue = "1") int page,
-                                     @RequestParam(value = "limit", defaultValue = "25") int limit) {
-        List<UserRest> returnValue = new ArrayList<>();
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    public List<UserResponse> getUsers(@RequestParam(value = "page", defaultValue = "1") int page,
+                                       @RequestParam(value = "limit", defaultValue = "25") int limit) {
+        List<UserResponse> returnValue = new ArrayList<>();
 
         List<UserDTO> users = userService.getUsers(page, limit);
 
         for (UserDTO userDTO : users) {
             ModelMapper modelMapper = new ModelMapper();
-            UserRest userModel = modelMapper.map(userDTO, UserRest.class);
+            UserResponse userModel = modelMapper.map(userDTO, UserResponse.class);
             returnValue.add(userModel);
         }
 
@@ -39,38 +39,39 @@ public class UserController {
     }
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<UserRest> getUser(@PathVariable String id) {
+    public ResponseEntity<UserResponse> getUser(@PathVariable String id) {
         ModelMapper modelMapper = new ModelMapper();
         UserDTO userDTO = userService.getUserByUserId(id);
-        UserRest returnValue = modelMapper.map(userDTO, UserRest.class);
+        UserResponse returnValue = modelMapper.map(userDTO, UserResponse.class);
 
         return ResponseEntity.ok(returnValue);
     }
 
     @PostMapping
-    public UserRest createUser(@RequestBody UserDetailsRequestModel userDetails) throws Exception {
+    public UserResponse createUser(@RequestBody UserDetailsRequest userDetails) throws Exception {
         ModelMapper modelMapper = new ModelMapper();
         UserDTO userDTO = modelMapper.map(userDetails, UserDTO.class);
 
         UserDTO createdUser = userService.createUser(userDTO);
-        UserRest returnValue = modelMapper.map(createdUser, UserRest.class);
+        UserResponse returnValue = modelMapper.map(createdUser, UserResponse.class);
 
         return returnValue;
     }
 
     @PutMapping(path = "/{id}")
-    public ResponseEntity<UserRest> updateUser(@RequestBody UserDetailsRequestModel userDetails, @PathVariable String id) {
+    public ResponseEntity<UserResponse> updateUser(@RequestBody UserDetailsRequest userDetails, @PathVariable String id) {
         ModelMapper modelMapper = new ModelMapper();
 
         UserDTO userDTO = modelMapper.map(userDetails, UserDTO.class);
 
         UserDTO updateUser = userService.updateUser(id, userDTO);
-        UserRest returnValue = modelMapper.map(updateUser, UserRest.class);
+        UserResponse returnValue = modelMapper.map(updateUser, UserResponse.class);
 
         return ResponseEntity.ok(returnValue);
     }
 
     @DeleteMapping(path = "/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OperationStatusModel> deleteUser(@PathVariable String id) {
         OperationStatusModel returnValue = new OperationStatusModel();
         returnValue.setOperationName(RequestOperationName.DELETE.name());

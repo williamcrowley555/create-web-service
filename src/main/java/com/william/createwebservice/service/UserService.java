@@ -12,4 +12,5 @@ public interface UserService extends UserDetailsService {
     UserDTO createUser(UserDTO user);
     UserDTO updateUser(String userId, UserDTO user);
     void deleteUser(String userId);
+    Boolean existsByEmail(String email);
 }

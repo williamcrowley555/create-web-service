@@ -66,6 +66,10 @@ public class UserDetailsImpl implements UserDetails {
         return true;
     }
 
+    public String getUserId() {
+        return this.userEntity.getUserId();
+    }
+
     public String getFullName() {
         return userEntity.getFirstName() + " " + userEntity.getLastName();
     }
