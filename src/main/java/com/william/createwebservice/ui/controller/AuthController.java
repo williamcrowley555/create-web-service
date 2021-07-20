@@ -8,10 +8,12 @@ import com.william.createwebservice.shared.dto.RoleDTO;
 import com.william.createwebservice.shared.dto.UserDTO;
 import com.william.createwebservice.ui.model.request.UserDetailsRequest;
 import com.william.createwebservice.ui.model.request.UserLoginRequest;
-import com.william.createwebservice.ui.model.response.ErrorMessage;
-import com.william.createwebservice.ui.model.response.JwtResponse;
-import com.william.createwebservice.ui.model.response.Role;
-import com.william.createwebservice.ui.model.response.SuccessMessage;
+import com.william.createwebservice.ui.model.response.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +47,13 @@ public class AuthController {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Operation(summary = "Sign in with email and password")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User sign in successfully",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = JwtResponse.class)) }),
+            @ApiResponse(responseCode = "404", description = "User not found",
+                    content = @Content) })
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody UserLoginRequest loginRequest) {
 
@@ -65,6 +74,15 @@ public class AuthController {
                 roles));
     }
 
+    @Operation(summary = "Sign up for an account")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User sign up successfully",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = JwtResponse.class)) }),
+            @ApiResponse(responseCode = "400", description = "Email is already in use",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Not available",
+                    content = @Content) })
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UserDetailsRequest signUpRequest) {
         if (userService.existsByEmail(signUpRequest.getEmail())) {

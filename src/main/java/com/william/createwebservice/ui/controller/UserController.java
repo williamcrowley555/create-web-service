@@ -4,6 +4,11 @@ import com.william.createwebservice.service.UserService;
 import com.william.createwebservice.shared.dto.UserDTO;
 import com.william.createwebservice.ui.model.request.UserDetailsRequest;
 import com.william.createwebservice.ui.model.response.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +26,12 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Operation(summary = "Get a list of users based on page and limit parameters")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Returns a list of users based on page and limit parameters",
+                    content = { @Content(mediaType = "application/json") }),
+            @ApiResponse(responseCode = "404", description = "No users found",
+                    content = @Content) })
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
     public List<UserResponse> getUsers(@RequestParam(value = "page", defaultValue = "1") int page,
@@ -38,6 +49,15 @@ public class UserController {
         return returnValue;
     }
 
+    @Operation(summary = "Get an user by its id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found the user",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = UserResponse.class)) }),
+            @ApiResponse(responseCode = "400", description = "Invalid id supplied",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "User not found",
+                    content = @Content) })
     @GetMapping(path = "/{id}")
     public ResponseEntity<UserResponse> getUser(@PathVariable String id) {
         ModelMapper modelMapper = new ModelMapper();
@@ -47,6 +67,13 @@ public class UserController {
         return ResponseEntity.ok(returnValue);
     }
 
+    @Operation(summary = "Create a new user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User created successfully",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = UserResponse.class)) }),
+            @ApiResponse(responseCode = "404", description = "Not available",
+                    content = @Content) })
     @PostMapping
     public UserResponse createUser(@RequestBody UserDetailsRequest userDetails) throws Exception {
         ModelMapper modelMapper = new ModelMapper();
@@ -58,6 +85,15 @@ public class UserController {
         return returnValue;
     }
 
+    @Operation(summary = "Update an existing user by its id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User updated successfully",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = UserResponse.class)) }),
+            @ApiResponse(responseCode = "400", description = "Invalid id supplied",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "User not found",
+                    content = @Content) })
     @PutMapping(path = "/{id}")
     public ResponseEntity<UserResponse> updateUser(@RequestBody UserDetailsRequest userDetails, @PathVariable String id) {
         ModelMapper modelMapper = new ModelMapper();
@@ -70,6 +106,15 @@ public class UserController {
         return ResponseEntity.ok(returnValue);
     }
 
+    @Operation(summary = "Delete an existing user by its id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User deleted successfully",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = UserResponse.class)) }),
+            @ApiResponse(responseCode = "400", description = "Invalid id supplied",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "User not found",
+                    content = @Content) })
     @DeleteMapping(path = "/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OperationStatusModel> deleteUser(@PathVariable String id) {
