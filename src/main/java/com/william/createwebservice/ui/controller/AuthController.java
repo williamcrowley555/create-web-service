@@ -51,7 +51,7 @@ public class AuthController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User sign in successfully",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = JwtResponse.class)) }),
+                            schema = @Schema(implementation = UserLoginRequest.class)) }),
             @ApiResponse(responseCode = "404", description = "User not found",
                     content = @Content) })
     @PostMapping("/signin")
@@ -78,7 +78,7 @@ public class AuthController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User sign up successfully",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = JwtResponse.class)) }),
+                            schema = @Schema(implementation = UserDetailsRequest.class)) }),
             @ApiResponse(responseCode = "400", description = "Email is already in use",
                     content = @Content),
             @ApiResponse(responseCode = "404", description = "Not available",
