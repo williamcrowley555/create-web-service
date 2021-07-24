@@ -98,7 +98,7 @@ public class AuthController {
         Set<String> strRoles = signUpRequest.getRoles();
         Set<RoleDTO> roles = new HashSet<>();
 
-        if (strRoles == null) {
+        if (strRoles == null || strRoles.isEmpty()) {
             RoleDTO userRole = roleService.getRoleByName(Role.ROLE_USER);
             roles.add(userRole);
         } else {
